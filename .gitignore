@@ -1,0 +1,29 @@
+# Ignore logs
+logs
+
+# Ignore minified code
+*.min.*
+
+# Ignore cache
+.cache
+
+# Ignore generated code
+generated/
+
+# Ignore reports
+coverage/
+reports/
+
+# Ignore virtualenvs
+.venv
+venv/
+
+# Ignore node modules
+node_modules/
+
+# Ignore env files
+.env
+
+
+# Ignore radata folder
+radata/
