@@ -64,7 +64,7 @@ io.on("connection", (socket) => {
 
             socket.join(user.room);
 
-            // Send users and room info
+            //    Send users and room info
 
             socket.emit(
               "WelcomeMessage",
@@ -75,7 +75,7 @@ io.on("connection", (socket) => {
                 )}`
               )
             );
-            
+
             socket.emit("loginSuccessMessage", user);
             socket.broadcast
               .to(user.room)
