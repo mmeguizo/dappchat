@@ -7,6 +7,7 @@ const PORT = process.env.PORT || 3000;
 const secretkey = process.env.SECRETKEY;
 const io = require("socket.io")(server);
 const Qs = require("qs");
+const http = require("http").Server(app);
 const formatMessage = require("./utils/messages");
 const {
   userJoin,
@@ -207,6 +208,10 @@ io.on("connection", (socket) => {
     }
     userDb.leave();
   });
+});
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "/public/index.html"));
 });
 
 server.listen(PORT, () => {
