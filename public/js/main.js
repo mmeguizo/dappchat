@@ -55,8 +55,6 @@ socket.on("chatMessage", (socket) => {
     userMessage(socket);
   }
 
-  console.log("chatMessage", socket);
-  // Scroll down
   chatMessages.scrollTop = chatMessages.scrollHeight;
 });
 
