@@ -8,4 +8,21 @@ function formatMessage(username, text) {
   };
 }
 
-module.exports = formatMessage;
+
+
+ function  formatGunJsMessage(message) {
+
+  return  message.map(message => {
+    return  {
+      username : message.who,
+      text : message.what,
+      time: moment(message.when).format("h:mm a"),
+    };
+  });
+ 
+}
+
+module.exports = {
+  formatMessage,
+  formatGunJsMessage
+};

@@ -2,10 +2,9 @@ const chatForm = document.getElementById("chat-form");
 const chatMessages = document.querySelector(".chat-messages");
 const roomName = document.getElementById("room-name");
 const userList = document.getElementById("users");
-// Get username and room from url
-// const loginForm = document.getElementById("login-form");
-// const usernameForm = document.getElementById("username").value;
-// const passwordForm = document.getElementById("password").value;
+let = combinedUsers = [];
+let messagesDb = [];
+
 const { username, password, room } = Qs.parse(location.search, {
   ignoreQueryPrefix: true,
 });
@@ -40,6 +39,59 @@ socket.on("connected", (socket) => {
   generalMessage(socket);
 });
 
+socket.on("loadChatMessageHistory", async (message,username) => {
+ console.log(message);
+ console.log(username);
+  message.forEach(message => {
+      console.log(message);
+
+    if(message.username === username){
+      ownMessage(message)
+    }else{
+      userMessage(message)
+    }
+
+      // outputMessage(message);
+      });
+
+      // if (message.username) {
+        
+      // }
+
+  // outputMessage(await message)
+  // setTimeout(() => {
+  //   const uniqueUsers = {};
+  //   for (const userArray of messagesDb) {
+  //     for (const user of userArray) {
+  //       const userId = user.username;
+  //       if (!uniqueUsers[userId]) {
+  //         // Add the user to the dictionary if not already present
+  //         uniqueUsers[userId] = user;
+  //       }
+  //     }
+  //   }
+  //    combinedUsers = Object.values(uniqueUsers);
+  //   console.log(combinedUsers);
+  //   outputMessage(combinedUsers[0])
+  // }, 3000);
+
+  // message.forEach(element => {
+  //   const div = document.createElement("div");
+  //   div.id = "message";
+  //   div.classList.add("message");
+  //   const p = document.createElement("p");
+  //   p.classList.add("meta");
+  //   p.innerText = message.username + " ";
+  //   p.innerHTML += `<span>${message.time}</span>`;
+  //   div.appendChild(p);
+  //   const para = document.createElement("p");
+  //   para.classList.add("text");
+  //   para.innerHTML = message.text;
+  //   div.appendChild(para);
+  //   document.querySelector(".chat-messages").appendChild(div);
+  // });
+});
+
 // Get room and users
 socket.on("roomUsers", ({ room, users }) => {
   outputRoomName(room);
@@ -48,6 +100,8 @@ socket.on("roomUsers", ({ room, users }) => {
 
 socket.on("chatMessage", (socket) => {
   const userData = JSON.parse(localStorage.getItem("user"));
+  // messagesDb = socket.messages
+  console.log({ chatMessages: socket });
 
   if (userData.username === socket.username.toLowerCase()) {
     ownMessage(socket);
@@ -75,6 +129,13 @@ socket.on("loginSuccessMessage", (socket) => {
   localStorage.setItem("user", JSON.stringify(store)); // save user to local storage (to store);
   chatMessages.firstChild.remove();
 });
+
+function removeLoading() {
+  chatMessages.firstChild.remove();
+}
+
+// output the old messages first to the chat messages before the newer ones or new messages
+//create here
 
 // Output message to DOM
 function outputMessage(message) {

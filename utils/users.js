@@ -1,7 +1,7 @@
 const users = [];
 // Join user to chat
-function userJoin(id, username, password, room) {
-  const user = { id, username, password, room };
+function userJoin(id, username, password, room, loadHist = false) {
+  const user = { id, username, password, room, loadHist };
   users.push(user);
   return user;
 }
@@ -11,6 +11,13 @@ function userJoin(id, username, password, room) {
 // Get current user
 function getCurrentUser(id) {
   return users.find((user) => user.id === id);
+}
+function setCurrentUserHist(id) {
+   let user = users.find((user) => user.id === id)
+   if(user){
+    user.loadHist = true;
+    return user;
+   }
 }
 
 function capitalizeFirstLetter(string) {
@@ -37,4 +44,5 @@ module.exports = {
   capitalizeFirstLetter,
   getRoomUsers,
   userLeave,
+  setCurrentUserHist
 };
