@@ -292,7 +292,7 @@ io.on("connection", (socket) => {
     // setCurrentUserHist(user.id);
     //new message to be encrypted and saved to db
     const secret = await Gun.SEA.encrypt(msg, secretkey);
-    const messageDb = userDb.get("all").set({ what: secret });
+    const messageDb = await userDb.get("all").set({ what: secret });
     const index = new Date().toISOString();
 
     gun.get("chat").get(user.room).get("messages").get(index).put(messageDb);
