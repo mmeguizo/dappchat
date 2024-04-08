@@ -1,6 +1,6 @@
 const users = [];
 // Join user to chat
-function userJoin(id, username, password, room, loadHist = false) {
+function userJoin(id, username, password, room, loadHist = 0) {
   const user = { id, username, password, room, loadHist };
   users.push(user);
   return user;
@@ -15,7 +15,7 @@ function getCurrentUser(id) {
 function setCurrentUserHist(id) {
    let user = users.find((user) => user.id === id)
    if(user){
-    user.loadHist = true;
+    user.loadHist = 1;
     return user;
    }
 }

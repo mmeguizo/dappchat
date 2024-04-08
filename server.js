@@ -45,7 +45,7 @@ io.on("connection", (socket) => {
     // const user = userJoin(socket.id, username, password, room);
 
     socket.emit(
-      "connected",
+      "WelcomeMessage",
       formatMessage(
         botName,
         `Welcome to Open Chat <span style="color:magenta">${capitalizeFirstLetter(
@@ -54,15 +54,7 @@ io.on("connection", (socket) => {
       )
     );
 
-    socket.emit(
-      "connected",
-      formatMessage(
-        botName,
-        `Please Wait Loading Chat History (Max. 5 sec) <span style="color:magenta">${capitalizeFirstLetter(
-          username
-        )} <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div> .</span> `
-      )
-    );
+  
 
     userDb.create(username, password, (createCb) => {
       if (createCb.err) {
@@ -149,8 +141,9 @@ io.on("connection", (socket) => {
           // property selector
           // find any indexed property larger ~3 hours ago
           // ">": new Date(+new Date() - 1 * 1000 * 60 * 60 * 3).toISOString(),
+          ">": new Date(+new Date() - 1 * 1000 * 60 * 60 * 3).toISOString(),
           // find any indexed property smaller ~5  days ago
-          ">": new Date(+new Date() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          // ">": new Date(+new Date() - 5 * 24 * 60 * 60 * 1000).toISOString(),
         },
         "-": 1, // filter in reverse
       };
@@ -174,6 +167,17 @@ io.on("connection", (socket) => {
       );
       console.log("==================");
 
+      socket.emit(
+        "loadingHistory",
+        formatMessage(
+          botName,
+          `Please wait until loading is finished <span style="color:magenta">${capitalizeFirstLetter(
+            username
+          )} <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div> .</span> 
+          `
+        )
+      );
+
       gun
         .get("chat") // Get the 'rooms' node
         .get(room) // Get the specific room by its name
@@ -190,20 +194,23 @@ io.on("connection", (socket) => {
             console.log({ MESSAGE: message });
 
             if (message.what) {
-              messages = [...messages.slice(-1000), message].sort(
+              messages = [...messages.slice(-50), message].sort(
                 (a, b) => a.when - b.when
               );
               //check if we need to load history should only load once
               console.log({ currentUser: currentUser });
-              if (!currentUser.loadHist) {
+             
                 setTimeout(() => {
-                  socket.emit(
-                    "loadChatMessageHistory",
-                    formatGunJsMessage(messages),username
-                  );
-                  setCurrentUserHist(currentUser.id);
+                  if(currentUser.loadHist === 0){
+                    socket.emit(
+                      "loadChatMessageHistory",
+                      formatGunJsMessage(messages),
+                      username
+                    );
+                    setCurrentUserHist(currentUser.id);
+                  }
                 }, 5000);
-              }
+            
             }
           }
         });
@@ -282,7 +289,7 @@ io.on("connection", (socket) => {
     // };
 
     const user = getCurrentUser(socket.id);
-    setCurrentUserHist(user.id);
+    // setCurrentUserHist(user.id);
     //new message to be encrypted and saved to db
     const secret = await Gun.SEA.encrypt(msg, secretkey);
     const messageDb = userDb.get("all").set({ what: secret });
