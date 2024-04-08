@@ -40,6 +40,9 @@ app.use(express.static(path.join(__dirname, "public")));
 
 //run when client connects
 io.on("connection", (socket) => {
+
+
+
   socket.on("joinRoom", ({ username, password, room }) => {
     // add to users
     // const user = userJoin(socket.id, username, password, room);
@@ -198,7 +201,7 @@ io.on("connection", (socket) => {
                 (a, b) => a.when - b.when
               );
               //check if we need to load history should only load once
-              console.log({ currentUser: currentUser });
+              console.log({ currentUser:  await gun.user(data).get("alias") });
              
                 setTimeout(() => {
                   if(currentUser.loadHist === 0){
