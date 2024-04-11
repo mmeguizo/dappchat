@@ -6,18 +6,16 @@ function userJoin(id, username, password, room, loadHist = 0) {
   return user;
 }
 
-
-
 // Get current user
 function getCurrentUser(id) {
   return users.find((user) => user.id === id);
 }
 function setCurrentUserHist(id) {
-   let user = users.find((user) => user.id === id)
-   if(user){
+  let user = users.find((user) => user.id === id);
+  if (user) {
     user.loadHist = 1;
     return user;
-   }
+  }
 }
 
 function capitalizeFirstLetter(string) {
@@ -33,6 +31,10 @@ function userLeave(id) {
   }
 }
 
+function getAllUsers() {
+  return users;
+}
+
 // Get room users
 function getRoomUsers(room) {
   return users.filter((user) => user.room === room);
@@ -44,5 +46,6 @@ module.exports = {
   capitalizeFirstLetter,
   getRoomUsers,
   userLeave,
-  setCurrentUserHist
+  setCurrentUserHist,
+  getAllUsers
 };

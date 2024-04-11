@@ -23,12 +23,12 @@
         <a id="leave-btn" class="btn">Leave Room</a>
       </header>
       <main class="chat-main">
-        <div class="chat-sidebar">
-          <h3><i class="fas fa-building"></i> Room Name:</h3>
+        <!--   <div class="chat-sidebar">
+         <h3><i class="fas fa-building"></i> Room Name:</h3>
           <h2 id="room-name"></h2>
           <h3><i class="fas fa-users"></i> Users</h3>
           <ul id="users"></ul>
-        </div>
+        </div>  -->
         <div class="chat-messages"></div>
       </main>
       <div class="chat-form-container">
@@ -43,12 +43,19 @@
         </form>
       </div>
     </div>
-    <!-- <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.12.0/qs.min.js"
-      integrity="sha512-7guIquo9is/MQs1wfLZyVViTlsvrIoHdnSzoFmPvPMDpqjL2fvDqcVKpaZ9PS3Sbf6DLBRUUZ5X3jcQ/wotWow=="
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1240/sea.js"
+      integrity="sha512-6/5OKWPt80TBgEfk7tXSbMfdla0V4celm4o/LHkgT8c+iXZVFYFQFeYTVlIIte2xsTCOAbUkcV1hSrJ2wm+3Wg=="
       crossorigin="anonymous"
-      referrerpolicy="no-referrer"></script> -->
+      referrerpolicy="no-referrer"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/gun/0.2020.1240/axe.js"
+      integrity="sha512-2IOSn3n0le20q8/BKHvoAPwtcYiAsDh8XumTZvdbjQnh1uD/QBaBdQY20Cx6EckT/+dcT+wveJvyZtljhkjW3g=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"></script>
     <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.30.1/moment.min.js"></script>
     <script src="js/main.js"></script>
   </body>
 </html>
