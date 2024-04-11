@@ -26,7 +26,7 @@ console.log(userDb.User);
 
 userDb.create(username, password, async (createCb) => {
   if (createCb.err) {
-    userDb.auth(username, password,async (cb) => {
+    userDb.auth(username, password, async (cb) => {
       if (cb.err) {
         console.info(cb.err + " Unable to login " + createCb.err);
         return;
@@ -50,33 +50,25 @@ userDb.create(username, password, async (createCb) => {
           .once(async (data, id) => {
             if (data) {
               // Key for end-to-end encryption
-              console.log( moment(data._[">"].what).format("h:mm a"));
-              
+              // console.log(data);
+              var message;
 
-            //   var message = {
-            //     // transform the data
-            //     // who: await gun.user(data).get('alias'), // a user might lie who they are! So let the user system detect whose data it is.
-            //     // what: (await SEA.decrypt(data.what, key)) + '', // force decrypt as text.
-            //     // when: GUN.state.is(data, 'what'), // get the internal timestamp for the what property.
-            //  who:  await gun.user(data).get('alias').then((alias) => {
-            //       console.log("Alias:", alias);
-            //     }).catch((error) => {
-            //       console.error("Error getting alias:", error); // Log the error
-            //       // Handle the error appropriately
-            //     }),
-                
-            //     what:  await SEA.decrypt(data.what, "#foo").then((decryptedWhat) => {
-            //       console.log("Decrypted what:", decryptedWhat);
-            //     }).catch((error) => {
-            //       console.error("Error decrypting message:", error); // Log the error
-            //       // Handle the decryption error appropriately
-            //     }),
-            //     when: gun.state.is(data, 'what')
-            //   };
+              // console.log(message.who =  await gun.user(data).get('alias') );
+              // console.log( message.what = await SEA.decrypt(data.what, "#foo") );
+              //       console.log(message.when = moment(data._[">"].what).format("h:mm a"));
+              var message = {
+                username: await gun.user(data).get("alias"),
+                text: await SEA.decrypt(data.what, "#foo").then(
+                  (decryptedWhat) => decryptedWhat
+                ),
+                time: moment(data._[">"].what).format("h:mm a"),
+                epub : gun.user(data).get("epub")._.put
+              };
               messages.push(message);
             }
           });
 
+     
 
 
         return;
@@ -92,14 +84,7 @@ userDb.create(username, password, async (createCb) => {
 
 
 
-
 });
-
-
-
-
-
-
 
 //Message from server
 socket.on("message", (socket) => {
@@ -177,7 +162,7 @@ socket.on("loadChatMessageHistory", async (message, username) => {
 // });
 
 socket.on("chatMessage", (socket) => {
-  console.log({Messages : messages});
+  console.log({ Messages: messages });
   console.log({ chatMessages: socket });
 
   if (socket.epub === epub) {
@@ -186,7 +171,6 @@ socket.on("chatMessage", (socket) => {
     userMessage(socket);
   }
 
-
   chatMessages.scrollTop = chatMessages.scrollHeight;
 });
 
@@ -194,7 +178,7 @@ socket.on("chatMessage", (socket) => {
 chatForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  let chatmessage = '';
+  let chatmessage = "";
   // Get message text
   const msg = e.target.elements.msg.value;
   // Emit message to server
@@ -202,27 +186,31 @@ chatForm.addEventListener("submit", async (e) => {
   e.target.elements.msg.value = "";
   e.target.elements.msg.focus();
 
-
   const secret = await SEA.encrypt(msg, "#foo");
   const messageDb = userDb.get("all").set({ what: secret });
   const index = new Date().toISOString();
   gun.get("supermeguizo").get(index).put(messageDb);
 
-
-
-
-
-   socket.emit("chatMessage", { msg, userName, epub });
+  socket.emit("chatMessage", { msg, userName, epub });
 });
 
 socket.on("loginSuccessMessage", (socket) => {
+
+  setTimeout(() => {
+    messages.forEach((message) => {
+      if (message.epub === epub) {
+        ownMessage(message);
+      } else {
+        userMessage(message)
+      }
+    })
+  }, 2000)
+
   console.log({ loginSuccessMessage: socket, username: socket.username });
   const { password, ...store } = socket;
-  store.epub = epub
+  store.epub = epub;
   localStorage.setItem("user", JSON.stringify(store));
   userName = store.username;
-
-
 
 });
 
@@ -268,6 +256,10 @@ function generalMessage(message) {
   document.querySelector(".chat-messages").appendChild(div);
 }
 function userMessage(message) {
+
+  console.log({userMessage : message});
+
+
   const div = document.createElement("div");
   // div.id = "message";
   div.classList.add("message");
@@ -285,6 +277,9 @@ function userMessage(message) {
 }
 
 function ownMessage(message) {
+
+  console.log({ownMessage : message});
+
   const div = document.createElement("div");
   // div.id = "message";
   div.classList.add("message");
@@ -364,14 +359,9 @@ function userMessageHistory(message) {
   parent.insertBefore(div, existingDiv);
 }
 
-
-async function getHistoryMessage ( cb){
-  
-  
-   return cb(messages)
+async function getHistoryMessage(cb) {
+  return cb(messages);
 }
-
-
 
 // async function getdata() {
 //   // const fetch = require("node-fetch")
