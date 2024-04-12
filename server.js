@@ -39,7 +39,11 @@ app.use(express.static(path.join(__dirname, "public")));
 
 //run when client connects
 io.on("connection", (socket) => {
-  socket.on("login", ({ username, password, room }) => {
+  socket.on("login", ({ username, password, room }, pub ) => {
+
+
+    console.log("login", username, password, room, pub);
+
     const user = userJoin(socket.id, username, password, room);
 
     socket.emit(
@@ -57,18 +61,17 @@ io.on("connection", (socket) => {
         `Welcome to Back to Open Chat!  ${capitalizeFirstLetter(username)}`
       )
     );
-
+    user.pub = pub
     socket.emit("loginSuccessMessage", user);
 
     // Send users and room info
-    socket.emit("roomUsers", {
-      users: getRoomUsers(user.room),
-    });
+    // socket.emit("roomUsers", {
+    //   users: getRoomUsers(user.room),
+    // });
   });
 
-  socket.on("newUserLogin", ({ username, password, room }) => {
+  socket.on("newUserLogin", ({ username, password, room, pub }) => {
     const user = userJoin(socket.id, username, password, room);
-    currentUser = getCurrentUser(socket.id);
     // add to users
     // const user = userJoin(socket.id, username, password, room);
 
@@ -79,20 +82,22 @@ io.on("connection", (socket) => {
         `Welcome to Open Chat! ${capitalizeFirstLetter(username)}`
       )
     );
+
+    user.pub = pub
     socket.emit("loginSuccessMessage", user);
-    socket.emit("roomUsers", {
-      users: getRoomUsers(user.room),
-    });
+    // socket.emit("roomUsers", {
+    //   users: getRoomUsers(user.room),
+    // });
   });
 
   //runs when client disconnects
   //listen for chatMessage
   socket.on("chatMessage", async (userMessage) => {
-    const { userName, msg, epub } = userMessage;
+    const { userName, msg, UserPub } = userMessage;
     // Emit message to room clients
     io.emit(
       "chatMessage",
-      formatMessage(capitalizeFirstLetter(userName), msg, epub)
+      formatMessage(capitalizeFirstLetter(userName), msg, UserPub)
     );
   });
 

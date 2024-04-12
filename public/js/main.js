@@ -5,8 +5,9 @@ const roomName = document.getElementById("room-name");
 const userList = document.getElementById("users");
 let userName = "";
 let userId = "";
-let epub = "";
+let UserPub = "";
 let messages = [];
+let reloadHist = false;
 const {
   username,
   password,
@@ -14,7 +15,7 @@ const {
 } = Qs.parse(location.search, {
   ignoreQueryPrefix: true,
 });
-
+const regex = /^~([^/]+)\//; // Regular expression to match the desired part
 const socket = io();
 
 console.log("testesr");
@@ -22,18 +23,18 @@ console.log("testesr");
 const userDb = gun.user().recall({ sessionStorage: true });
 
 console.log(userDb);
-console.log(userDb.User);
 
 userDb.create(username, password, async (createCb) => {
   if (createCb.err) {
     userDb.auth(username, password, async (cb) => {
       if (cb.err) {
         console.info(cb.err + " Unable to login " + createCb.err);
+        alert(cb.err);
+        window.location = "../index.html";
         return;
       } else {
         console.info({ message: "Success Login" });
-        socket.emit("login", { username, password, room });
-        userDb.get("epub").on((v) => (epub = v));
+        socket.emit("login", { username, password, room }, cb.sea.pub);
 
         var match = {
           // lexical queries are kind of like a limited RegEx or Glob.
@@ -45,14 +46,14 @@ userDb.create(username, password, async (createCb) => {
         };
         // Get Messages
         gun
-          .get("supermeguizo")
+          .get("meguizomindol")
           .map(match)
           .once(async (data, id) => {
             if (data) {
               // Key for end-to-end encryption
-              // console.log(data);
+              console.log(data);
               var message;
-
+              var pubs = await gun.user(data)._.get.slice(1);
               // console.log(message.who =  await gun.user(data).get('alias') );
               // console.log( message.what = await SEA.decrypt(data.what, "#foo") );
               //       console.log(message.when = moment(data._[">"].what).format("h:mm a"));
@@ -62,28 +63,32 @@ userDb.create(username, password, async (createCb) => {
                   (decryptedWhat) => decryptedWhat
                 ),
                 time: moment(data._[">"].what).format("h:mm a"),
-                epub : gun.user(data).get("epub")._.put
+                pub: pubs,
               };
-              messages.push(message);
+              
+              messages.push(message)
+              
+              messages.forEach((message) => {
+                console.log({ MESSAGES : message});
+                if (cb.sea.pub === pubs && !reloadHist) {
+                  ownOldMessage(message);
+                } else {
+                  useroldMessage(message)
+                }
+              })
             }
           });
-
-     
-
-
+        UserPub = cb.sea.pub;
         return;
       }
     });
   } else {
     const { ok, pub } = createCb;
     console.info({ ok, pub }, " created user");
-    socket.emit("newUserLogin", { username, password, room });
-    userDb.get("epub").on((v) => (epub = v));
+    socket.emit("newUserLogin", { username, password, room, pub });
+    UserPub = pub;
     return;
   }
-
-
-
 });
 
 //Message from server
@@ -161,23 +166,11 @@ socket.on("loadChatMessageHistory", async (message, username) => {
 //   outputUsers(users);
 // });
 
-socket.on("chatMessage", (socket) => {
-  console.log({ Messages: messages });
-  console.log({ chatMessages: socket });
-
-  if (socket.epub === epub) {
-    ownMessage(socket);
-  } else {
-    userMessage(socket);
-  }
-
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-});
 
 // Message submit
 chatForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-
+  
   let chatmessage = "";
   // Get message text
   const msg = e.target.elements.msg.value;
@@ -185,33 +178,31 @@ chatForm.addEventListener("submit", async (e) => {
   //clear message after submit
   e.target.elements.msg.value = "";
   e.target.elements.msg.focus();
-
+  
   const secret = await SEA.encrypt(msg, "#foo");
   const messageDb = userDb.get("all").set({ what: secret });
   const index = new Date().toISOString();
-  gun.get("supermeguizo").get(index).put(messageDb);
-
-  socket.emit("chatMessage", { msg, userName, epub });
+  gun.get("meguizomindol").get(index).put(messageDb);
+  socket.emit("chatMessage", { msg, userName, UserPub });
 });
 
+socket.on("chatMessage", (socket) => {
+  console.log({ Messages: messages });
+  console.log({ chatMessages: socket });
+
+  if (socket.pub === UserPub) {
+    ownMessage(socket);
+  } else {
+    userMessage(socket);
+  }
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+});
 socket.on("loginSuccessMessage", (socket) => {
-
-  setTimeout(() => {
-    messages.forEach((message) => {
-      if (message.epub === epub) {
-        ownMessage(message);
-      } else {
-        userMessage(message)
-      }
-    })
-  }, 2000)
-
   console.log({ loginSuccessMessage: socket, username: socket.username });
   const { password, ...store } = socket;
-  store.epub = epub;
+  store.pub = socket.pub || pub;
   localStorage.setItem("user", JSON.stringify(store));
   userName = store.username;
-
 });
 
 function removeLoading() {
@@ -256,9 +247,7 @@ function generalMessage(message) {
   document.querySelector(".chat-messages").appendChild(div);
 }
 function userMessage(message) {
-
-  console.log({userMessage : message});
-
+  console.log({ userMessage: message });
 
   const div = document.createElement("div");
   // div.id = "message";
@@ -275,15 +264,53 @@ function userMessage(message) {
   div.appendChild(para);
   document.querySelector(".chat-messages").appendChild(div);
 }
+function useroldMessage(message) {
+  console.log({ userMessage: message });
+
+  const div = document.createElement("div");
+  // div.id = "message";
+  div.classList.add("oldUserMessage");
+  div.style.backgroundColor = "rgb(149 174 215)";
+  div.style.marginRight = "45%";
+  const p = document.createElement("p");
+  p.classList.add("meta");
+  p.innerText = message.username + " ";
+  p.innerHTML += `<span>${message.time}</span>`;
+  div.appendChild(p);
+  const para = document.createElement("p");
+  para.classList.add("text");
+  para.innerHTML = message.text;
+  div.appendChild(para);
+  document.querySelector(".chat-messages").appendChild(div);
+}
 
 function ownMessage(message) {
-
-  console.log({ownMessage : message});
+  console.log({ ownMessage: message });
 
   const div = document.createElement("div");
   // div.id = "message";
   div.classList.add("message");
   div.style.backgroundColor = "#0866ff";
+  div.style.marginLeft = "45%";
+  const p = document.createElement("p");
+  p.classList.add("meta");
+  p.innerText = message.username + " ";
+  p.innerHTML += `<span>${message.time}</span>`;
+  div.appendChild(p);
+  const para = document.createElement("p");
+  para.classList.add("text");
+  para.style.overflowWrap = "break-word";
+  para.innerHTML = message.text;
+  div.appendChild(para);
+  document.querySelector(".chat-messages").appendChild(div);
+}
+function ownOldMessage(message) {
+  console.log({ ownMessage: message });
+
+  const div = document.createElement("div");
+  // div.id = "message";
+  div.classList.add("message");
+  div.style.backgroundColor = "rgb(149 174 215)";
   div.style.marginLeft = "45%";
   const p = document.createElement("p");
   p.classList.add("meta");

@@ -1,8 +1,8 @@
 const moment = require("moment");
 
-function formatMessage(username, text,epub) {
+function formatMessage(username, text,UserPub) {
   return {
-    epub : epub,
+    pub : UserPub,
     username,
     text,
     time: moment().format("h:mm a"),
